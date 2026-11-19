@@ -12,7 +12,7 @@ ROUTES.parent=function(tab){
   if(!PARENT.unlocked())return pinAsk(tab);
   PARENT.ok=Date.now();tab=tab||'report';
   const body={report:pReport,control:pControl,add:pAdd,audio:pAudio,backup:pBackup,pin:pPin}[tab]||pReport;
-  app().innerHTML=crumbs([['الرئيسية','#/home'],['ركن ولي الأمر']])+`<div class="row" style="margin-bottom:8px">${PTABS.map(([k,e,n])=>`<a class="chip ${tab===k?'on':''}" href="#/parent/${k}">${e} ${n}</a>`).join('')}<button class="chip" id="plock">🔒 قفل</button></div><div id="pbody"></div>`;
+  app().innerHTML=crumbs([['الرئيسية','#/home'],['ركن ولي الأمر']])+`<div class="row noprint" style="margin-bottom:8px">${PTABS.map(([k,e,n])=>`<a class="chip ${tab===k?'on':''}" href="#/parent/${k}">${e} ${n}</a>`).join('')}<button class="chip" id="plock">🔒 قفل</button></div><div id="pbody"></div>`;
   $('plock').onclick=()=>{PARENT.ok=0;go('#/home');};
   body($('pbody'));
 };
@@ -46,7 +46,7 @@ function pReport(h){
   ${errs.length?`<div class="card"><h3>✍️ أكثر أخطاء الإملاء</h3>${errs.map(([c,n])=>`<div>• ${esc((ERRCAT[c]||{}).n||c)}: <b>${n}</b> مرة ${ERRCAT[c]&&ERRCAT[c].r?`— <a href="#/rule/${ERRCAT[c].r}">القاعدة</a>`:''}</div>`).join('')}</div>`:''}
   <div class="card"><h3>🎤 تسجيلات الإلقاء</h3><div id="pst">${S.stageLog.length?'':'<p class="small">لا توجد تسجيلات بعد.</p>'}</div></div>
   <div class="card"><h3>🖋️ آخر ما كتب في دفتره</h3>${S.notebook.length?S.notebook.slice(-5).reverse().map(n=>`<details><summary>${esc(n.title||'بلا عنوان')} <span class="small">· ${fmtDate(n.updated||n.d)} · ${nbWords(n.text).length} كلمة</span></summary><div style="white-space:pre-wrap">${esc(n.text)}</div></details>`).join(''):'<p class="small">لم يكتب بعد.</p>'}</div>
-  <div class="row center"><button class="btn main" onclick="window.print()">🖨️ طباعة التقرير</button><button class="btn" id="pjson">⬇️ تنزيل التقرير (JSON)</button></div>`;
+  <div class="row center noprint"><button class="btn main" onclick="window.print()">🖨️ طباعة التقرير</button><button class="btn" id="pjson">⬇️ تنزيل التقرير (JSON)</button></div>`;
   $('pjson').onclick=()=>download('report-'+today()+'.json',JSON.stringify({name:S.name,date:new Date().toISOString(),xp:S.xp,streak:streak(),daysActive:Object.keys(S.days).length,lessons:S.lessons,stats:S.stats,errors:S.errs,learned:Object.keys(S.learned).length,dictLog:S.dictLog,readLog:S.readLog,stageLog:S.stageLog,games:S.games,rules:S.rules,grammar:S.gbs,rhetoric:S.rhs,badges:S.badges},null,2));
   const seen=new Set();const last=S.stageLog.slice().reverse().filter(x=>!seen.has(x.id)&&seen.add(x.id)).slice(0,8);
   Promise.all(last.map(x=>ADB.get('st:'+x.id))).then(bl=>{const el=$('pst');if(!el||!last.length)return;el.innerHTML=`<table class="tbl"><tr><th>النص</th><th>آخر تدريب</th><th>كلمة/دقيقة</th><th></th></tr>${last.map((x,i)=>`<tr><td>${esc(x.t)}</td><td>${fmtDate(x.d)}</td><td>${x.wpm||'—'}</td><td>${bl[i]?`<button class="btn sm" data-pl="${i}">▶</button>`:''}</td></tr>`).join('')}</table>`;

@@ -72,7 +72,7 @@ function nbAnalyse(type,text){const T=nbType(type);const out=[];const W=nbWords(
   const rep=Object.entries(cnt).filter(([k,n])=>n>=4).sort((a,b)=>b[1]-a[1]).slice(0,3);
   rep.forEach(([k,n])=>{const ex=W.find(w=>normLoose(w).includes(k));out.push(['🔁',`تكررت «${ex}» ${n} مرات. هل تجد مرادفًا أو ضميرًا يغني عن بعضها؟ ${D.dict.some(d=>normLoose(d.w)===k)?'(ابحث عنها في المعجم)':''}`]);});
   const used=LINKERS.filter(l=>text.includes(l));if(W.length>=40&&used.length<2)out.push(['🔗','جرّب أدوات ربط تصل الأفكار، مثل: '+LINKERS.filter(l=>!used.includes(l)).slice(0,5).join('، ')]);
-  const seen=new Set();NB_SPELL.forEach(([re,msg,cat])=>{re.lastIndex=0;if(re.test(text)&&!seen.has(msg)){seen.add(msg);out.push(['✍️',msg+(ERRCAT&&ERRCAT[cat]?` <a href="#/rule/${ERRCAT[cat]}">راجع القاعدة</a>`:'')]);}});
+  const seen=new Set();NB_SPELL.forEach(([re,msg,cat])=>{re.lastIndex=0;if(re.test(text)&&!seen.has(msg)){seen.add(msg);out.push(['✍️',msg+(ERRCAT[cat]&&ERRCAT[cat].r?` <a href="#/rule/${ERRCAT[cat].r}">راجع القاعدة</a>`:'')]);}});
   return out;}
 
 let NB={draft:null};

@@ -11,5 +11,7 @@ window.CONTENT_FILES=[
   'grammar/buildings.js','rhetoric/garden.js',
   'library/poetry.js','library/prose.js','library/reading-1.js','library/reading-2.js',
   'stage/speech.js',
+  'heritage/proverbs.js','heritage/riddles.js','heritage/treasures.js',
+  'games/banks.js',
   'audio/manifest.js'
 ];

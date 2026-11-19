@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 window.D={levels:[],dict:[],dictGroups:{},dictation:[],quranDict:[],spelling:[],grammar:[],rhetoric:[],
-  poems:[],prose:[],reading:[],speech:[],proverbs:[],riddles:[],heritage:{stories:[],anecdotes:[],names:[],games:[]},audioFiles:{},_warn:[]};
+  poems:[],prose:[],reading:[],speech:[],proverbs:[],riddles:[],heritage:{stories:[],anecdotes:[],names:[],games:[]},gbank:{},audioFiles:{},_warn:[]};
 window.K={
   _ids:new Set(),
   _id(kind,id){const k=kind+':'+id;if(this._ids.has(k))D._warn.push('معرّف مكرر: '+k);this._ids.add(k);},
@@ -39,6 +39,8 @@ window.K={
   proverbs(list){D.proverbs.push(...list);},
   riddles(list){D.riddles.push(...list);},
   heritage(kind,list){D.heritage[kind].push(...list);},
+  /* بنوك الألعاب: K.gameBank('irab',[...]) */
+  gameBank(name,list){(D.gbank[name]=D.gbank[name]||[]).push(...list);},
   /* ملفات صوتية مرفوعة مع الموقع: K.audio({'d:g1':'content/audio/g1.mp3'}) */
   audio(map){Object.assign(D.audioFiles,map);}
 };

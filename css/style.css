@@ -190,3 +190,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.92rem}table.tbl th,tabl
 .stage-text .bayt{display:grid;grid-template-columns:1fr 1fr;gap:18px;font-family:var(--poem);text-align:center}
 @media(max-width:560px){.stage-text .bayt{grid-template-columns:1fr;gap:0;margin-bottom:8px}}
 .stars .iconbtn{width:36px;height:36px;font-size:1.2rem}
+/* الألعاب */
+.memc{aspect-ratio:1;border-radius:14px;border:2px solid var(--line);background:var(--teal);color:#fff;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;transition:transform .2s}
+.memc.open{background:var(--card);color:var(--ink);transform:rotateY(10deg)}
+.memc.done{background:#e3f5ea;border-color:var(--mint2);color:var(--ink)}
+body.dark .memc.done{background:#1f3a2c}
+.kb .token{min-width:38px}

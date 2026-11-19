@@ -184,3 +184,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.92rem}table.tbl th,tabl
 @media(max-width:420px){.xpbar{width:56px}.brand .bt{display:none}}
 @media print{.topbar,.bottomnav,.noprint{display:none!important}body{padding:0;background:#fff}}
 #exans:empty::before{content:'اضغط على القطع بالترتيب الصحيح لتظهر هنا';color:var(--ink2);font-size:.85rem;padding:8px}
+/* مسرح الإلقاء */
+.stage-text{font-size:calc(1.35rem * var(--fs,1));line-height:2.1;background:var(--paper);border-radius:14px;padding:14px 16px;margin-top:10px}
+.stage-text p{margin:0 0 6px}
+.stage-text .bayt{display:grid;grid-template-columns:1fr 1fr;gap:18px;font-family:var(--poem);text-align:center}
+@media(max-width:560px){.stage-text .bayt{grid-template-columns:1fr;gap:0;margin-bottom:8px}}
+.stars .iconbtn{width:36px;height:36px;font-size:1.2rem}

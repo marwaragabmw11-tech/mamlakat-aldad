@@ -9,5 +9,7 @@ window.CONTENT_FILES=[
   'dictation/quran.js','dictation/general.js',
   'writing/rules.js',
   'grammar/buildings.js','rhetoric/garden.js',
+  'library/poetry.js','library/prose.js','library/reading-1.js','library/reading-2.js',
+  'stage/speech.js',
   'audio/manifest.js'
 ];

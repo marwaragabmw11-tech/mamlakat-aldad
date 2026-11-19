@@ -34,13 +34,22 @@ ROUTES.word=function(id){const w=D.dict.find(x=>x.id===id);if(!w)return go('#/di
   <div class="row"><button class="btn gold" id="tst">🎯 اختبرني في هذه الكلمة</button>${prev?`<a class="btn" href="#/word/${prev.id}">→ ${esc(prev.w)}</a>`:''}${next?`<a class="btn" href="#/word/${next.id}">${esc(next.w)} ←</a>`:''}</div><div id="qhost"></div>`;
   $('tst').onclick=()=>{const items=wordQuiz(w);new Quiz($('qhost'),items,{sec:'vocab',key:'W:'+id,onDone:(p,ok,n)=>{if(p>=PASS&&!S.learned[id]){S.learned[id]=today();save();dayInc('words');addXP(8,'كلمة جديدة');}else if(ok)addXP(ok,'');$('qhost').innerHTML=resultHTML(p,ok,n,`<div class="row center">${next?`<a class="btn main" href="#/word/${next.id}">الكلمة التالية ←</a>`:''}<a class="btn" href="#/dict">المعجم</a></div>`);checkBadges();}});$('tst').disabled=true;};
 };
-function wordQuiz(w){const pool=D.dict.filter(x=>x.id!==w.id);const same=pool.filter(x=>x.g===w.g);const others=sample(same.length>=3?same:pool,3);const out=[];
-  out.push({t:'mc',q:`ما معنى «${w.w}»؟`,o:[w.m,...others.map(x=>x.m)],a:0,h:w.s||''});
-  const back=sample(same.length>=3?same:pool,3);out.push({t:'mc',q:`أي كلمة معناها: ${w.m}؟`,o:[w.w,...back.map(x=>x.w)],a:0});
-  if(w.syn&&w.syn.length){const d=sample(pool.filter(x=>!(w.syn||[]).includes(x.w)),3);out.push({t:'mc',q:`ما مرادف «${w.w}»؟`,o:[w.syn[0],...d.map(x=>x.w)],a:0});}
-  else if(w.ant&&w.ant.length){const d=sample(pool,3);out.push({t:'mc',q:`ما ضد «${w.w}»؟`,o:[w.ant[0],...d.map(x=>x.w)],a:0});}
-  if(w.pl&&w.pl!==w.w)out.push({t:'in',q:`اكتب جمع «${w.w}»`,a:[].concat(w.pl.split(/\s*[،,]\s*|\s+و\s*/)).filter(Boolean),s:1,h:'الجمع: '+w.pl});
-  return out;}
+/* اختبار الكلمة: المشتتات تُستبعد إن كانت قريبة المعنى (مرادف مشترك، نفس الجذر، أو تشابه في ألفاظ المعنى) حتى لا يكون للسؤال جوابان */
+function mTok(m){return new Set(normLoose(m).split(' ').filter(t=>t.length>3).map(t=>t.replace(/^(ال|وال|بال|لل)/,'')));}
+function wRelated(a,b){if(a.id===b.id||normLoose(a.w)===normLoose(b.w))return true;
+  const sa=(a.syn||[]).map(normLoose),sb=(b.syn||[]).map(normLoose);
+  if(sa.includes(normLoose(b.w))||sb.includes(normLoose(a.w))||sa.some(x=>sb.includes(x)))return true;
+  if(a.root&&a.root===b.root)return true;
+  const A=mTok(a.m),B=mTok(b.m);let c=0;A.forEach(t=>{if(B.has(t))c++;});return c>=2||(c>=1&&Math.min(A.size,B.size)<=2);}
+function distract(w,n,ok){const pool=D.dict.filter(x=>!wRelated(w,x)&&(!ok||ok(x)));const same=pool.filter(x=>x.g===w.g);return sample(same.length>=n?same:pool,n);}
+function uniqOpts(o){const seen=new Set();return o.filter(x=>{const k=normLoose(x);if(seen.has(k))return false;seen.add(k);return true;});}
+function wordQuiz(w){const out=[];const bad=new Set([...(w.syn||[]),...(w.ant||[])].map(normLoose));
+  out.push({t:'mc',q:`ما معنى «${w.w}»؟`,o:uniqOpts([w.m,...distract(w,3).map(x=>x.m)]),a:0,h:w.s||''});
+  out.push({t:'mc',q:`أي كلمة معناها: ${w.m}`,o:uniqOpts([w.w,...distract(w,3).map(x=>x.w)]),a:0});
+  if(w.syn&&w.syn.length){out.push({t:'mc',q:`ما مرادف «${w.w}»؟`,o:uniqOpts([w.syn[0],...distract(w,3,x=>!bad.has(normLoose(x.w))).map(x=>x.w)]),a:0});}
+  else if(w.ant&&w.ant.length){out.push({t:'mc',q:`ما ضد «${w.w}»؟`,o:uniqOpts([w.ant[0],...distract(w,3,x=>!bad.has(normLoose(x.w))).map(x=>x.w)]),a:0});}
+  if(w.pl&&w.pl!==w.w)out.push({t:'in',q:`اكتب جمع «${w.w}»`,a:w.pl.split(/\s*[،,]\s*/).filter(Boolean),s:1,h:'الجمع: '+w.pl});
+  return out.filter(e=>e.t!=='mc'||e.o.length>=3);}
 
 /* ===== مختبر الكتابة ===== */
 ROUTES.writing=function(){

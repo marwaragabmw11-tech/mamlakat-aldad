@@ -5,6 +5,7 @@
 window.LEVEL_UNITS={1:8};
 window.CONTENT_FILES=[
   ...Object.entries(LEVEL_UNITS).flatMap(([n,u])=>['levels/'+n+'/_level.js',...Array.from({length:u},(_,i)=>'levels/'+n+'/unit-'+(i+1)+'.js')]),
+  'dictionary/_groups.js','dictionary/daily.js','dictionary/fusha.js','dictionary/quran.js','dictionary/rare.js',
   'dictation/quran.js','dictation/general.js',
   'writing/rules.js',
   'audio/manifest.js'

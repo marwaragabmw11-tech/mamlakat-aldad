@@ -8,5 +8,6 @@ window.CONTENT_FILES=[
   'dictionary/_groups.js','dictionary/daily.js','dictionary/fusha.js','dictionary/quran.js','dictionary/rare.js',
   'dictation/quran.js','dictation/general.js',
   'writing/rules.js',
+  'grammar/buildings.js','rhetoric/garden.js',
   'audio/manifest.js'
 ];

@@ -18,6 +18,13 @@ window.K={
   /* مجموعة معجمية: K.dictGroup('daily',{n:'مفردات الحياة',e:'🏡'}) ثم K.words('daily',[...]) */
   dictGroup(id,g){D.dictGroups[id]=g;},
   words(g,list){list.forEach((w,i)=>{w.g=g;w.id=w.id||(g+'-'+(D.dict.filter(x=>x.g===g).length+1));this._id('word',w.id);D.dict.push(w);});},
+  /* صيغة مختصرة للمعجم: كل سطر كلمة، والأعمدة مفصولة بـ | بهذا الترتيب:
+     الكلمة | رمز الصورة | المعنى | جملة | مرادفات | أضداد | الجمع | الجذر | من أسرتها | من الحياة | إضافي1 | إضافي2
+     القوائم داخل العمود مفصولة بـ «،». الإضافي1 في مجموعة الفصيح = اللفظ العامي، وفي الكلمات القرآنية = الآية، والإضافي2 = موضعها. */
+  wordsT(g,text){const L=s=>s?s.split('،').map(x=>x.trim()).filter(Boolean):[];
+    this.words(g,text.trim().split(/\n+/).map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).map(l=>{const c=l.split('|').map(x=>x.trim());
+      const w={w:c[0],e:c[1]||'',m:c[2]||'',s:c[3]||'',syn:L(c[4]),ant:L(c[5]),pl:c[6]||'',root:c[7]||'',der:L(c[8]),life:c[9]||''};
+      if(g==='fusha')w.amm=c[10]||'';if(g==='quran'){w.q=c[10]||'';w.qr=c[11]||'';}return w;}));},
   /* إملاء عام: {id,lvl,k:'word|short|long|para',t:'النص',title} */
   dictation(list){list.forEach(x=>{this._id('dict',x.id);D.dictation.push(x);});},
   /* إملاء قرآني: {id,s:رقم السورة,sn:'اسمها',a:رقم الآية,t:'النص بالإملاء الحديث',rasm:'ملاحظة رسم المصحف',tip} */

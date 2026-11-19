@@ -25,21 +25,25 @@ function normLoose(s){return normSpaces(stripTashkeel(s).replace(PUNCT,' ').repl
 function normStrict(s){return normSpaces(stripTashkeel(s).replace(PUNCT,' ').replace(/ٱ/g,'ا'));}
 function words(s){return normStrict(s).split(' ').filter(Boolean);}
 
-/* فرق الكلمات (LCS) */
+/* فرق الكلمات: تطابق تام عبر LCS، ثم مقابلة ما بينها كلمةً بكلمة */
 function lcsDiff(a,b){ // a: الصحيح، b: كتابة الطفل
   const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
   for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-  const out=[];let i=0,j=0;
-  while(i<n&&j<m){
-    if(a[i]===b[j]){out.push({k:'ok',w:a[i]});i++;j++;}
-    else if(dp[i+1][j]>=dp[i][j+1]&&dp[i+1][j]>=dp[i+1][j+1]&&!(dp[i+1][j+1]===dp[i+1][j]&&sim(a[i],b[j]))){out.push({k:'miss',w:a[i]});i++;}
-    else if(dp[i][j+1]>dp[i+1][j+1]&&!sim(a[i],b[j])){out.push({k:'extra',w:b[j]});j++;}
-    else{out.push({k:'bad',w:a[i],got:b[j]});i++;j++;}
-  }
-  while(i<n)out.push({k:'miss',w:a[i++]});while(j<m)out.push({k:'extra',w:b[j++]});
+  const pairs=[];let i=0,j=0;while(i<n&&j<m){if(a[i]===b[j]){pairs.push([i,j]);i++;j++;}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++;}
+  pairs.push([n,m]);const out=[];let pi=0,pj=0;
+  for(const [x,y] of pairs){const A=a.slice(pi,x),B=b.slice(pj,y);gap(A,B,out);if(x<n)out.push({k:'ok',w:a[x]});pi=x+1;pj=y+1;}
   return out;
 }
-function sim(x,y){return normLoose(x)===normLoose(y)||lev(x,y)<=Math.max(1,Math.floor(Math.max(x.length,y.length)/3));}
+function gap(A,B,out){ // مقابلة كلمات الفجوة: الأقرب شبهًا أولًا، والباقي ناقص أو زائد
+  let i=0,j=0;
+  while(i<A.length&&j<B.length){
+    if(sim(A[i],B[j])||A.length-i===B.length-j){out.push({k:'bad',w:A[i],got:B[j]});i++;j++;}
+    else if(A.length-i>B.length-j){out.push({k:'miss',w:A[i]});i++;}
+    else{out.push({k:'extra',w:B[j]});j++;}
+  }
+  while(i<A.length)out.push({k:'miss',w:A[i++]});while(j<B.length)out.push({k:'extra',w:B[j++]});
+}
+function sim(x,y){const X=normLoose(x),Y=normLoose(y);return X===Y||lev(X,Y)<=Math.max(1,Math.round(Math.max(X.length,Y.length)/3));}
 function lev(a,b){const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
 
 /* الأصوات التشجيعية (WebAudio) */

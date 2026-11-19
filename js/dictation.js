@@ -18,19 +18,21 @@ const ERRTIP={
  unwritten:'من الحروف التي تُنطق ولا تُكتب: الألف في (هذا، هذه، ذلك، لكن، الله، الرحمن، طه).',
  punct:'انتبه لعلامات الترقيم: النقطة (.) في نهاية الجملة، والفاصلة (،) بين الجمل المتصلة، وعلامة الاستفهام (؟) بعد السؤال، وعلامة التعجب (!) بعد التعجب.',
  miss:'استمع مرة أخرى بالسرعة البطيئة، وعُدّ الكلمات قبل أن تكتب.',other:'قارن كلمتك بالكلمة الصحيحة حرفًا حرفًا، وانطقها ببطء.'};
-function catOf(c,g){const C=stripTashkeel(c),G=stripTashkeel(g);
-  if(normLoose(C)===normLoose(G)){
-    const ce=C.slice(-1),ge=G.slice(-1);
-    if(ce==='ة'||ge==='ة')return 'ta';if('ىي'.includes(ce)&&'ىيا'.includes(ge)||ce==='ا'&&ge==='ى')return 'alif';
-    for(let i=0;i<Math.min(C.length,G.length);i++)if(C[i]!==G[i]){const ch=C[i]+G[i];if(/[أإآاءؤئوي]{2}/.test(ch)){if(i===0||(i===2&&C.startsWith('ال')))return 'wasl';return i>=C.length-1||i>=C.length-2&&C.endsWith('ا')?'hend':'hmid';}}
-    return 'other';}
-  if(/[ًا]$/.test(C)&&C.replace(/ا$/,'')===G)return 'tanween';
-  if(C.endsWith('وا')&&G===C.slice(0,-1))return 'silent';
+function catOf(c,g){const C=stripTashkeel(c),G=stripTashkeel(g);const H=/[أإآءؤئ]/;
+  if(C.endsWith('وا')&&G===C.slice(0,-1)||G.endsWith('وا')&&C===G.slice(0,-1)&&!C.endsWith('و'+'ا'))return 'silent';
   if(G.endsWith('وا')&&C===G.slice(0,-1))return 'silent';
-  if(C.startsWith('ال')&&(G===C.slice(0,1)+C.slice(2)||G===C.slice(2)))return 'lam';
-  const UN=['هذا','هذه','ذلك','لكن','لكنّ','الله','الرحمن','هؤلاء','أولئك','طه'];if(UN.some(u=>C.includes(u))&&G.length===C.length+1)return 'unwritten';
-  if(G.length===C.length-1){for(let i=0;i<C.length;i++){if(C.slice(0,i)+C.slice(i+1)===G&&'اوي'.includes(C[i]))return 'madd';}}
-  if(/[أإؤئء]/.test(C)||/[أإؤئء]/.test(G))return C.search(/[أإؤئء]/)===0?'wasl':'hmid';
+  if(C.endsWith('ا')&&G===C.slice(0,-1)||G===C+'ا')return 'tanween';
+  if(C.startsWith('ال')&&C.length>3&&(G==='ا'+C.slice(2)||G===C.slice(2)))return 'lam';
+  if(H.test(C)||H.test(G)){const L=Math.max(C.length,G.length);let i=0;while(i<L&&C[i]===G[i])i++;
+    const cc=C[i]||'',gg=G[i]||'';if(H.test(cc)||H.test(gg)||(H.test(C)!==H.test(G))){
+      const hp=C.search(H)>=0?C.search(H):i;const pos=Math.min(i,hp<0?i:hp);
+      if(pos===0||(C.startsWith('ال')&&pos===2))return 'wasl';
+      const lastH=C.replace(/[اً]$/,'').length-1;return pos>=lastH?'hend':'hmid';}}
+  const ce=C.slice(-1),ge=G.slice(-1);
+  if(C.slice(0,-1)===G.slice(0,-1)){if(ce==='ة'||ge==='ة')return 'ta';if('اىي'.includes(ce)&&'اىي'.includes(ge))return 'alif';}
+  const UN=['هذا','هذه','هذان','ذلك','لكن','الله','الرحمن','هؤلاء','أولئك','طه'];if(UN.some(u=>C.includes(u))&&G.length===C.length+1)return 'unwritten';
+  if(G.length===C.length-1){for(let k=0;k<C.length;k++){if(C.slice(0,k)+C.slice(k+1)===G&&'اوي'.includes(C[k]))return 'madd';}}
+  if(normLoose(C)===normLoose(G))return 'other';
   return 'other';}
 function gradeDict(correct,typed){
   const A=words(correct),B=words(typed);const d=lcsDiff(A,B);const cats={};let ok=0;
@@ -76,7 +78,7 @@ ROUTES.dk=function(part,id){const isQ=part==='q';const it=(isQ?D.quranDict:allDi
   qsa('[data-rate]').forEach(b=>b.onclick=()=>{rate=+b.dataset.rate;qsa('[data-rate]').forEach(x=>x.classList.toggle('on',x===b));play();});
   $('peek').onclick=()=>{const w=words(it.t);toast('عدد الكلمات: '+w.length+' · أول كلمة: '+w[0],3500);};
   $('chk').onclick=()=>{const v=$('ans').value.trim();if(!v)return toast('اكتب ما سمعته أولًا');
-    const g=gradeDict(it.t,v);Object.entries(g.cats).forEach(([k,n])=>{S.errs[k]=(S.errs[k]||0)+n;});
+    const g=[it.t,...(it.alt||[])].map(c=>gradeDict(c,v)).sort((x,y)=>y.p-x.p)[0];Object.entries(g.cats).forEach(([k,n])=>{S.errs[k]=(S.errs[k]||0)+n;});
     S.dictLog.push({d:new Date().toISOString(),id:it.id,t:it.t,p:g.p});if(S.dictLog.length>300)S.dictLog.shift();
     stat('dictation',g.p>=PASS);if(g.p<PASS)addRev('D:'+it.id,{t:'au',a:it.t,id:isQ?null:(it.aid||'d:'+it.id),q:isQ?'اكتب: سورة '+it.sn+' ('+it.a+')':''},'dictation');save();dayInc('dict');
     g.p>=PASS?(SFX.ok(),g.p===100&&confetti()):SFX.no();addXP(Math.round(g.p/10)+(g.p===100?5:0),'إملاء');

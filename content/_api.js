@@ -15,6 +15,34 @@ window.K={
   /* وحدة داخل مستوى: K.unit(رقم المستوى, {name, icon, lessons:[{t, body, ex:[...]}]}) — المعرّفات تُولَّد تلقائيًا */
   unit(n,u){const L=D.levels.find(x=>x.n===n);if(!L){D._warn.push('مستوى غير موجود: '+n);return;}L.units.push(u);const ui=L.units.length;
     u.id=n+'.'+ui;u.lessons.forEach((l,li)=>{l.id=l.id||(n+'.'+ui+'.'+(li+1));this._id('lesson',l.id);this._ex('درس '+l.t,l.ex);});},
+  /* صيغة مختصرة لكتابة وحدة: K.unitT(رقم المستوى,'اسم الوحدة','رمز',`نص`)
+     ## عنوان درس جديد
+     سطر عادي ← فقرة · = سطر ← مثال · > سطر ← قاعدة · سطر يبدأ بـ < ← HTML كما هو
+     mc|السؤال|الإجابة الصحيحة|خطأ|خطأ|h=تلميح        (الإجابة الصحيحة أولًا دائمًا، والخيارات تُخلط عند العرض)
+     tf|العبارة|1 أو 0|h=تلميح
+     in|السؤال|إجابة/إجابة أخرى|s (s = إملائي صارم)|h=تلميح
+     or|التعليمة|كلمة كلمة كلمة|alt=ترتيب آخر صحيح
+     lt|التعليمة|الكلمة */
+  unitT(n,name,icon,text){const lessons=[];let L=null;
+    const P=s=>s.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+    text.split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
+      if(line.startsWith('## ')){L={t:line.slice(3).trim(),body:'',ex:[]};lessons.push(L);return;}
+      if(!L)return;
+      const m=line.match(/^(mc|tf|in|or|lt)\|(.*)$/);
+      if(m){let f=m[2].split('|').map(x=>x.trim());let h='',alt=null,strict=false;
+        f=f.filter(x=>{if(x.startsWith('h=')){h=x.slice(2);return false;}if(x.startsWith('alt=')){alt=x.slice(4).split('/').map(a=>a.trim().split(/\s+/));return false;}if(x==='s'){strict=true;return false;}return true;});
+        let e;const t=m[1];
+        if(t==='mc')e={t,q:f[0],o:f.slice(1),a:0};
+        else if(t==='tf')e={t,q:f[0],a:f[1]==='1'};
+        else if(t==='in')e={t,q:f[0],a:f[1].split('/').map(x=>x.trim())};
+        else if(t==='or')e={t,q:f[0],w:f[1].split(/\s+/)};
+        else e={t,q:f[0],w:f[1]};
+        if(h)e.h=h;if(alt)e.alt=alt;if(strict)e.s=1;L.ex.push(e);return;}
+      if(line.startsWith('<'))L.body+=line;
+      else if(line.startsWith('= '))L.body+='<div class="example">'+P(line.slice(2))+'</div>';
+      else if(line.startsWith('> '))L.body+='<div class="rule">💡 '+P(line.slice(2))+'</div>';
+      else L.body+='<p>'+P(line)+'</p>';});
+    this.unit(n,{name,icon,lessons});},
   /* مجموعة معجمية: K.dictGroup('daily',{n:'مفردات الحياة',e:'🏡'}) ثم K.words('daily',[...]) */
   dictGroup(id,g){D.dictGroups[id]=g;},
   words(g,list){list.forEach((w,i)=>{w.g=g;w.id=w.id||(g+'-'+(D.dict.filter(x=>x.g===g).length+1));this._id('word',w.id);D.dict.push(w);});},
